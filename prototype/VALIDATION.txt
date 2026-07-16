@@ -1,0 +1,54 @@
+Cinnamon Overview Modern v19 validation
+Generated: 2026-07-16T18:36:10+00:00
+
+PASS production bundle has no diagnostic logging
+PASS Super integration has no project-specific GSettings dependency
+PASS overlay-key handler and reservation are registered unconditionally
+PASS modal Super interception is unconditional
+PASS modal Super is handled before generic keybinding dispatch
+PASS modal Super dispatches on release, not press
+PASS duplicate physical Super release is consumed once
+PASS Super plus another key cancels bare-Super activation
+PASS overlay-key is ignored while physical modal path is authoritative
+PASS Overview owns the 400 ms double-activation invariant
+PASS single Super uses the recognition window as a visible close animation
+PASS show requests reverse a close before the already-shown fast path
+PASS heavy teardown is deferred until after desktop interaction is restored
+PASS shortcut model starts close immediately and reverses a double tap
+PASS Overview uses panel overview mode instead of opacity disable/enable
+PASS panel manager exposes overview enter and leave fan-out
+PASS panel overview mode forces a fully visible dock without changing strut mode
+PASS panel exit keeps always-visible mode instant and re-evaluates hideable modes
+PASS intellihide recalculates when focus becomes null
+PASS overview content geometry reserves panel edges on every monitor
+PASS St.Adjustment transition cleanup is capability checked
+PASS swipe begin marks scrolling before optional cleanup
+PASS swipe end rounds and clamps the requested workspace
+PASS swipe end always unlocks logical state
+PASS no unsafe direct adjustment transition removal remains
+PASS routing model: second Super cannot reach generic close action
+PASS routing model: Super plus key cancels only the bare-Super action
+PASS swipe model works when Adjustment has no transition removal API
+PASS window arrow navigation uses visual actor geometry
+PASS arrow navigation prefers the same visual row before a diagonal window
+PASS centered incomplete row keeps physical left and right semantics
+PASS GridNavigator remains as a compatibility fallback
+
+32 tests passed
+
+PASS no trailing whitespace in patched JS and scripts
+checking file workspace.js
+PASS incremental patch dry-run and application
+PASS incremental patch result is byte-identical
+checking file main.js
+checking file overview.js
+checking file appGrid.js
+checking file searchResults.js
+checking file workspace.js
+checking file workspacesView.js
+checking file panel.js
+PASS cumulative patch dry-run and application
+PASS cumulative patch result is byte-identical
+PASS only workspace.js changed relative to v18
+NOTE graphical Cinnamon/Muffin validation is not available in this container
+PASS ZIP integrity and SHA-256 verification

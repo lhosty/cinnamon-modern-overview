@@ -1,0 +1,138 @@
+--- a/workspace.js
++++ b/workspace.js
+@@ -624,17 +624,128 @@
+         this._kbWindowIndex = 0; // index of the current keyboard-selected window
+     },
+ 
++    _getWindowNavigationCenter: function(clone) {
++        if (!clone || !clone.actor || clone.actor.is_finalized())
++            return null;
++
++        try {
++            let [x, y] = clone.actor.get_transformed_position();
++            let [width, height] = clone.actor.get_transformed_size();
++
++            if (![x, y, width, height].every(Number.isFinite) ||
++                width <= 0 || height <= 0)
++                return null;
++
++            return {
++                x: x + width / 2,
++                y: y + height / 2
++            };
++        } catch (e) {
++            return null;
++        }
++    },
++
++    _selectWindowByVisualDirection: function(symbol) {
++        let horizontal = false;
++        let direction = 0;
++
++        switch (symbol) {
++            case Clutter.KEY_Left:
++            case Clutter.KEY_KP_Left:
++                horizontal = true;
++                direction = -1;
++                break;
++            case Clutter.KEY_Right:
++            case Clutter.KEY_KP_Right:
++                horizontal = true;
++                direction = 1;
++                break;
++            case Clutter.KEY_Up:
++            case Clutter.KEY_KP_Up:
++                direction = -1;
++                break;
++            case Clutter.KEY_Down:
++            case Clutter.KEY_KP_Down:
++                direction = 1;
++                break;
++            default:
++                return false;
++        }
++
++        let currentIndex = Math.max(0,
++            Math.min(this._kbWindowIndex, this._windows.length - 1));
++        let currentCenter = this._getWindowNavigationCenter(
++            this._windows[currentIndex]
++        );
++        if (!currentCenter)
++            return false;
++
++        // Spatial navigation must follow what the user sees, not the logical
++        // array/grid order. This matters for incomplete centered rows, such as
++        // three windows arranged as two above and one below.
++        let bestIndex = -1;
++        let bestScore = Infinity;
++        let bestPrimaryDistance = Infinity;
++        let epsilon = Math.max(2, global.ui_scale || 1);
++
++        for (let i = 0; i < this._windows.length; i++) {
++            if (i === currentIndex)
++                continue;
++
++            let center = this._getWindowNavigationCenter(this._windows[i]);
++            if (!center)
++                continue;
++
++            let dx = center.x - currentCenter.x;
++            let dy = center.y - currentCenter.y;
++            let primary = horizontal ? direction * dx : direction * dy;
++            if (primary <= epsilon)
++                continue;
++
++            let cross = Math.abs(horizontal ? dy : dx);
++
++            // Strongly prefer windows on the same visual row/column while
++            // still allowing a diagonal move when the destination row is
++            // incomplete. The secondary distance breaks geometric ties.
++            let score = primary + cross * 2.5;
++            if (score < bestScore - 0.01 ||
++                (Math.abs(score - bestScore) <= 0.01 &&
++                 primary < bestPrimaryDistance)) {
++                bestIndex = i;
++                bestScore = score;
++                bestPrimaryDistance = primary;
++            }
++        }
++
++        if (bestIndex < 0)
++            return false;
++
++        this.selectIndex(bestIndex);
++        return true;
++    },
++
+     selectAnotherWindow: function(symbol) {
+         let numWindows = this._windows.length;
+-        if (numWindows === 0) {
++        if (numWindows === 0)
+             return false;
+-        }
+-        let currentIndex = this._kbWindowIndex;
++
++        // Use actual actor geometry for the arrow keys. GridNavigator assumes
++        // every row starts at the same x coordinate, which reverses left/right
++        // semantics on centered incomplete rows.
++        if (this._selectWindowByVisualDirection(symbol))
++            return true;
++
++        let currentIndex = Math.max(0,
++            Math.min(this._kbWindowIndex, numWindows - 1));
+         let numCols = Math.ceil(Math.sqrt(numWindows));
+-        let nextIndex = GridNavigator.nextIndex(numWindows, numCols, currentIndex, symbol);
+-        if (nextIndex < 0) {
+-            return false; // not handled
+-        }
++        let nextIndex = GridNavigator.nextIndex(
++            numWindows,
++            numCols,
++            currentIndex,
++            symbol
++        );
++        if (nextIndex < 0)
++            return false;
+ 
+         this.selectIndex(nextIndex);
+         return true;
